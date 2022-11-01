@@ -5,16 +5,21 @@ const newTodo = require("../mock-data/new-todo.json")
 
 TodoModel.create = jest.fn()
 
+let req, res, next;
+
+beforeEach(()=>{
+    req=httpMocks.createRequest();
+    res=httpMocks.createResponse();
+    next = null;
+});
+
 describe("TodoController.createTodo",()=>{
     it("should have a createTodo function",()=>{
         expect(typeof TodoController.createTodo).toBe("function")
     })
     it("should call TodoModel.create",()=>{
         //node-mocks-http 이용하여 요청, 응답객체 생성
-        let req, res, next;
-        req=httpMocks.createRequest();
-        res=httpMocks.createResponse();
-        next = null;
+
 
         //mockData를 req.body에 넣어줌
         req.body=newTodo;
