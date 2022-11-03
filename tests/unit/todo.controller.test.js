@@ -11,7 +11,8 @@ beforeEach(()=>{
     //node-mocks-http 이용하여 요청, 응답객체 생성
     req=httpMocks.createRequest();
     res=httpMocks.createResponse();
-    next = null;
+    //next가 다음 액션이 될 fn 처리되어야 함
+    next = jest.fn();
 });
 
 describe("TodoController.createTodo",()=>{
@@ -44,5 +45,16 @@ describe("TodoController.createTodo",()=>{
         //객체를 toBe로 비교하면 값 같아도 주소값이 달라서 안됨
         //toStrictEqual() 이용
         expect(res._getJSONData()).toStrictEqual(newTodo);
+    })
+    //에러 발생시의 핸들링
+    it("should handle Error", async ()=>{
+        //에러메세지
+        const errorMessage = {message : "Required Property is Missing"}
+        //문제가 생긴 Promise 생성
+        const rejectPromise = Promise.reject(errorMessage)
+        //create시 문제가 생긴 Promise를 돌려받도록 함
+        TodoModel.create.mockReturnValue(rejectPromise)
+        await TodoController.createTodo(req,res,next);
+        expect(next).toBeCalledWith(errorMessage);
     })
 })
