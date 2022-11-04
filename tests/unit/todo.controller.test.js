@@ -3,9 +3,12 @@ const TodoModel = require("../../models/todo.model");
 const httpMocks = require("node-mocks-http");
 const newTodo = require("../mock-data/new-todo.json")
 const allTodos = require("../mock-data/all-todo.json")
+const todo = require("../mock-data/todo.json")
+
 
 TodoModel.create = jest.fn()
 TodoModel.find = jest.fn()
+TodoModel.findById = jest.fn()
 
 let req, res, next;
 
@@ -91,5 +94,44 @@ describe("TodoController.getTodos",()=>{
     TodoModel.find.mockReturnValue(rejectPromise)
     await TodoController.getTodos(req,res,next);
     expect(next).toHaveBeenCalledWith(errorMessage);
+    })
 })
+
+describe("TodoController.getTodoById()",()=>{
+    it("should have getTodoById() function",async ()=>{
+        expect(typeof TodoController.getTodoById).toBe("function");
+    });
+    it("should call TodoModel.findById() with route parameters", async ()=>{
+        req.params.todoId = "FHA8VLOu0Q4DsWe1etxQk";
+        await TodoController.getTodoById(req,res,next);
+        expect(TodoModel.findById).toBeCalledWith(req.params.todoId);
+    })
+    //응답확인
+    //리턴으로 Todo를 돌려주는지 확인
+    it("should return response with status 200 and todo", async ()=>{
+        TodoModel.findById.mockReturnValue(todo);
+        await TodoController.getTodoById(req,res,next);
+        expect(res.statusCode).toBe(200);
+        expect(res._isEndCalled()).toBeTruthy();
+        expect(res._getJSONData()).toStrictEqual(todo);
+    })
+    //null 리턴받은 경우
+    it("should return response with status 404 when result is null", async ()=>{
+        TodoModel.findById.mockReturnValue(null);
+        await TodoController.getTodoById(req,res,next);
+        expect(res.statusCode).toBe(404);
+        expect(res._isEndCalled()).toBeTruthy();
+    })
+    //에러 발생시의 핸들링
+    it("should handle Error", async ()=>{
+    //에러메세지
+    const errorMessage = {message : "Something wrong"}
+    //문제가 생긴 Promise 생성
+    const rejectPromise = Promise.reject(errorMessage)
+    //create시 문제가 생긴 Promise를 돌려받도록 함
+    TodoModel.findById.mockReturnValue(rejectPromise)
+    await TodoController.getTodoById(req,res,next);
+    expect(next).toHaveBeenCalledWith(errorMessage);
+    })
+    
 })
