@@ -8,5 +8,13 @@ exports.createTodo= async (req, res, next)=>{
     }catch(err){
         next(err);
     }
-    
+}
+
+exports.getTodos = async (req, res, next)=>{
+    try{
+        const result = await TodoModel.find({});
+        res.status(200).json(result);
+    }catch(err){
+        next(err);
+    }
 }

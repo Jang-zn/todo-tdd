@@ -2,8 +2,10 @@ const TodoController = require("../../controllers/todo.controller");
 const TodoModel = require("../../models/todo.model");
 const httpMocks = require("node-mocks-http");
 const newTodo = require("../mock-data/new-todo.json")
+const allTodos = require("../mock-data/all-todo.json")
 
 TodoModel.create = jest.fn()
+TodoModel.find = jest.fn()
 
 let req, res, next;
 
@@ -57,4 +59,37 @@ describe("TodoController.createTodo",()=>{
         await TodoController.createTodo(req,res,next);
         expect(next).toBeCalledWith(errorMessage);
     })
+})
+
+describe("TodoController.getTodos",()=>{
+    //기능 체크
+    it("should have a getTodos() function",()=>{
+        expect(typeof TodoController.getTodos).toBe("function")
+    });
+    //model.find({})로 document 모두 가져오도록 함
+    //toHaveBeenCalledWith()<- 여기에 들어간 파라미터가 앞에 호출한 함수의 파라미터인지를 확인하는것
+    it("should call TodoModel.find()",async ()=>{
+        await TodoController.getTodos(req,res,next);
+        expect(TodoModel.find).toHaveBeenCalledWith({})
+    });
+    //응답확인
+    //리턴으로 Todo List를 돌려주는지 확인
+    it("should return response with status 200 and all Todos", async ()=>{
+        TodoModel.find.mockReturnValue(allTodos);
+        await TodoController.getTodos(req,res,next);
+        expect(res.statusCode).toBe(200);
+        expect(res._isEndCalled()).toBeTruthy();
+        expect(res._getJSONData()).toStrictEqual(allTodos);
+    })
+   //에러 발생시의 핸들링
+   it("should handle Error", async ()=>{
+    //에러메세지
+    const errorMessage = {message : "Something wrong"}
+    //문제가 생긴 Promise 생성
+    const rejectPromise = Promise.reject(errorMessage)
+    //create시 문제가 생긴 Promise를 돌려받도록 함
+    TodoModel.find.mockReturnValue(rejectPromise)
+    await TodoController.getTodos(req,res,next);
+    expect(next).toHaveBeenCalledWith(errorMessage);
+})
 })
