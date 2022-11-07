@@ -8,7 +8,7 @@ const newTodo = require("../mock-data/new-todo.json")
 
 const endpointUrl = '/todos/';
 
-let firstTodo = 
+let firstTodo;
 
 describe(endpointUrl, ()=>{
     //GET /todos
@@ -28,6 +28,11 @@ describe(endpointUrl, ()=>{
         expect(response.statusCode).toBe(200);
         expect(response.body.title).toBe(firstTodo.title);
         expect(response.body.done).toBe(firstTodo.done);
+    })
+    test("GET by Id doesn't exist"+endpointUrl+":todoId", async()=>{
+        let nullId = '63632d8cef21e7c2d03fdce';
+        const response = await request(app).get(endpointUrl+nullId);
+        expect(response.statusCode).toBe(500);
     })
 
 
