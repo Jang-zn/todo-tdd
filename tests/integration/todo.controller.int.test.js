@@ -8,9 +8,11 @@ const newTodo = require("../mock-data/new-todo.json")
 
 const endpointUrl = '/todos/';
 
+let firstTodo = 
+
 describe(endpointUrl, ()=>{
     //GET /todos
-    it("GET "+endpointUrl, async()=>{
+    test("GET "+endpointUrl, async()=>{
         const response = await request(app).get(endpointUrl);
         expect(response.statusCode).toBe(200);
         //res.body에 array 형태 result 반환하는지 확인
@@ -18,10 +20,19 @@ describe(endpointUrl, ()=>{
         //res.body가 반환한 array의 항목에 property가 정의되어있는지 확인
         expect(response.body[0].title).toBeDefined();
         expect(response.body[0].done).toBeDefined();
+        firstTodo = response.body[0];
+    })
+    //GET /todos/:todoId
+    test("GET by Id"+endpointUrl+":todoId", async()=>{
+        const response = await request(app).get(endpointUrl+firstTodo._id);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.title).toBe(firstTodo.title);
+        expect(response.body.done).toBe(firstTodo.done);
     })
 
+
     //POST /todos
-    it("POST " +endpointUrl, async ()=>{
+    test("POST " +endpointUrl, async ()=>{
         const response = await request(app)
         .post(endpointUrl)
         .send(newTodo);
@@ -31,7 +42,7 @@ describe(endpointUrl, ()=>{
         expect(response.body.title).toBe(newTodo.title);
         expect(response.body.done).toBe(newTodo.done);
     })
-    it("should return error 500 on malformed data with POST " +endpointUrl, async ()=>{
+    test("should return error 500 on malformed data with POST " +endpointUrl, async ()=>{
         const response = await request(app)
         .post(endpointUrl)
         .send({title:"missing done"});
@@ -40,7 +51,7 @@ describe(endpointUrl, ()=>{
             message : "Todo validation failed: done: Path `done` is required."
         });
     })
-    it("should return error 500 on malformed data with POST " +endpointUrl, async ()=>{
+    test("should return error 500 on malformed data with POST " +endpointUrl, async ()=>{
         const response = await request(app)
         .post(endpointUrl)
         .send({done:false});
