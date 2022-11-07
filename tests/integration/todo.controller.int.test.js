@@ -22,6 +22,8 @@ describe(endpointUrl, ()=>{
         expect(response.body[0].done).toBeDefined();
         firstTodo = response.body[0];
     })
+
+
     //GET /todos/:todoId
     test("GET by Id"+endpointUrl+":todoId", async()=>{
         const response = await request(app).get(endpointUrl+firstTodo._id);
@@ -32,6 +34,7 @@ describe(endpointUrl, ()=>{
     test("GET by Id doesn't exist"+endpointUrl+":todoId", async()=>{
         let nullId = '63632d8cef21e7c2d03fdce';
         const response = await request(app).get(endpointUrl+nullId);
+        //mongoose가 404가 아니라 id가 없으면 그냥 500을 던진다
         expect(response.statusCode).toBe(500);
     })
 
