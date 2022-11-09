@@ -6,11 +6,14 @@ const allTodos = require("../mock-data/all-todo.json")
 const todo = require("../mock-data/todo.json")
 
 
-TodoModel.create = jest.fn();
-TodoModel.find = jest.fn();
-TodoModel.findById = jest.fn();
-TodoModel.findByIdAndUpdate = jest.fn();
-TodoModel.findByIdAndDelete = jest.fn();
+// TodoModel.create = jest.fn();
+// TodoModel.find = jest.fn();
+// TodoModel.findById = jest.fn();
+// TodoModel.findByIdAndUpdate = jest.fn();
+// TodoModel.findByIdAndDelete = jest.fn();
+//아래 함수로 mocking해주면 함수마다 jset.fn() 안해줘도 된다.
+jest.mock("../../models/todo.model");
+
 
 let req, res, next;
 
@@ -148,28 +151,38 @@ describe("TodoController.updateTodo()",()=>{
     });
     it("should call TodoModel.findByIdAndUpdate()", async()=>{
         TodoController.updateTodo(req, res, next);
-        expect(TodoModel.findByIdAndUpdate).toBeCalledWith(req.params.todoId, newTodo)
+        expect(TodoModel.findByIdAndUpdate).toBeCalledWith(req.params.todoId, newTodo, {new:true})
     });
     //2. 응답 확인
     it("should return response with status 200 and todoId", async ()=>{
         todoId = "FHA8VLOu0Q4DsWe1etxQk";
-        TodoModel.findByIdAndUpdate.mockReturnValue(todoId);
+        TodoModel.findByIdAndUpdate.mockReturnValue(newTodo);
         await TodoController.updateTodo(req,res,next);
         expect(res.statusCode).toBe(200);
         expect(res._isEndCalled()).toBeTruthy();
-        expect(res._getJSONData()).toStrictEqual(todoId);
+        expect(res._getJSONData()).toStrictEqual(newTodo);
     });
     //3. 에러 핸들링
     //에러 발생시의 핸들링 - 대충 뭉뚱그려놨는데 실제로는 케이스 나눠서 확인해야됨
-    it("should handle Error", async ()=>{
+    it("should handle Error", async ()=>{   
+        //에러메세지
+        const errorMessage = {message : "Something wrong"}
+        //문제가 생긴 Promise 생성
+        const rejectPromise = Promise.reject(errorMessage)
+        TodoModel.findByIdAndUpdate.mockReturnValue(rejectPromise)
+        await TodoController.updateTodo(req,res,next);
+        expect(next).toHaveBeenCalledWith(errorMessage);
+    });
+    it("should handle Error 404", async ()=>{
         //에러메세지
         const errorMessage = {message : "Something wrong"}
         //문제가 생긴 Promise 생성
         const rejectPromise = Promise.reject(errorMessage)
         //create시 문제가 생긴 Promise를 돌려받도록 함
-        TodoModel.findByIdAndUpdate.mockReturnValue(rejectPromise)
+        TodoModel.findByIdAndUpdate.mockReturnValue(null)
         await TodoController.updateTodo(req,res,next);
-        expect(next).toHaveBeenCalledWith(errorMessage);
+        expect(res.statusCode).toBe(404);
+        expect(res._isEndCalled).toBeTruthy();
     });
 });
 
@@ -205,5 +218,16 @@ describe("TodoController.deleteTodo()",()=>{
         TodoModel.findByIdAndDelete.mockReturnValue(rejectPromise)
         await TodoController.deleteTodo(req,res,next);
         expect(next).toHaveBeenCalledWith(errorMessage);
+    });
+    it("should handle Error 404", async ()=>{
+        //에러메세지
+        const errorMessage = {message : "Something wrong"}
+        //문제가 생긴 Promise 생성
+        const rejectPromise = Promise.reject(errorMessage)
+        //create시 문제가 생긴 Promise를 돌려받도록 함
+        TodoModel.findByIdAndDelete.mockReturnValue(null)
+        await TodoController.deleteTodo(req,res,next);
+        expect(res.statusCode).toBe(404);
+        expect(res._isEndCalled).toBeTruthy();
     });
 });
