@@ -31,7 +31,7 @@ exports.getTodoById = async (req, res, next)=>{
 exports.updateTodo = async (req, res, next)=>{
     try{
         const newTodo = req.body;
-        const result = await TodoModel.updateOne(req.params.todoId, newTodo);
+        const result = await TodoModel.findByIdAndUpdate(req.params.todoId, newTodo);
         result ? res.status(200).json(result) : res.status(404).send();
     }catch(err){
         next(err);
@@ -40,8 +40,8 @@ exports.updateTodo = async (req, res, next)=>{
 
 exports.deleteTodo = async (req, res, next)=>{
     try{
-        const result = await TodoModel.deleteOne(req.params.todoId);
-        res.status(200).json(result) 
+        const result = await TodoModel.findByIdAndDelete(req.params.todoId);
+        result ? res.status(200).json(result) : res.status(404).send();
     }catch(err){
         next(err);
     }

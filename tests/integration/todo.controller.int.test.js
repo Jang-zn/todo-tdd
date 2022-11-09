@@ -68,6 +68,33 @@ describe(endpointUrl, ()=>{
             message : "Todo validation failed: title: Path `title` is required."
         });
     })
+
+    //PUT /todos/:todoId
+    test("PUT updateTodo"+endpointUrl+":todoId", async()=>{
+        const response = await request(app).put(endpointUrl+firstTodo._id).send(newTodo);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.id).toBe(firstTodo.id);
+        expect(response.body.title).toBe(firstTodo.title);
+        expect(response.body.done).toBe(firstTodo.done);
+    })
+    test("PUT by Id doesn't exist"+endpointUrl+":todoId", async()=>{
+        let nullId = '63632d8cef21e7c2d03fdce';
+        const response = await request(app).put(endpointUrl+nullId).send(newTodo);
+        //mongoose가 404가 아니라 id가 없으면 그냥 500을 던진다
+        expect(response.statusCode).toBe(500);
+    })
+
+    //DELETE /todos/:todoId
+    test("DELETE deleteTodo"+endpointUrl+":todoId", async()=>{
+        const response = await request(app).delete(endpointUrl+firstTodo._id);
+        expect(response.statusCode).toBe(200);
+    })
+    test("DELETE by Id doesn't exist"+endpointUrl+":todoId", async()=>{
+        let nullId = '63632d8cef21e7c2d03fdce';
+        const response = await request(app).delete(endpointUrl+nullId);
+        //mongoose가 404가 아니라 id가 없으면 그냥 500을 던진다
+        expect(response.statusCode).toBe(500);
+    })
 })
 
 describe(endpointUrl,()=>{
